@@ -15,7 +15,7 @@ How to Install:
 3. Open up the installer and select the Karlson Copy's .exe file
 4. Press install
 5. Boot up the game once without any mods
-6. Install [KarlsonReplay.dll](https://github.com/iaihrs/HighPoint/releases/download/1.0/HighPoint.dll)
+6. Install [KarlsonReplay.dll](https://github.com/nonagonn/KarlsonReplay/releases/download/1.0.0/KarlsonReplay.dll)
 7. Put KarlsonReplay.dll in the Mods folder
 8. Enjoy!
 
