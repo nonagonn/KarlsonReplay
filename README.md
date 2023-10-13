@@ -5,7 +5,9 @@ DISCLAIMER:
 THIS MOD IS W.I.P! EVERYTHING IS SUBJECT TO CHANGE AND IT IS CURRENTLY UNFINISHED!
 
 Planned Features:
+
 Saving Replays
+
 Recording States such as grabbing gun, shooting, and more
 
 How to Install:
