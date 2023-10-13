@@ -20,5 +20,9 @@ How to Install:
 8. Enjoy!
 
 How to Use:
-Loading into a level will automatically start recording a replay. If you want to stop recording at any time, you can pause the game and press L to replay.
+
+Loading into a level will automatically start recording a replay. 
+
+If you want to stop recording at any time, you can pause the game and press L to replay.
+
 If you want to replay a level when you finish, press the REPLAY button in the top left.
