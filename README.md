@@ -1,16 +1,16 @@
 # KarlsonReplay
 Allows replays in Karlson.
 
-DISCLAIMER:
+# DISCLAIMER:
 THIS MOD IS W.I.P! EVERYTHING IS SUBJECT TO CHANGE AND IT IS CURRENTLY UNFINISHED!
 
-Planned Features:
+# Planned Features:
 
 Saving Replays
 
 Recording States such as grabbing gun, shooting, and more
 
-How to Install:
+# How to Install:
 
 1. Have a clean copy of [Karlson](https://danidev.itch.io/karlson)
 2. Install the [MelonLoader Installer](https://github.com/HerpDerpinstine/MelonLoader/releases/latest/download/MelonLoader.Installer.exe) 
@@ -21,7 +21,7 @@ How to Install:
 7. Put KarlsonReplay.dll in the Mods folder
 8. Enjoy!
 
-How to Use:
+# How to Use:
 
 Loading into a level will automatically start recording a replay. 
 
