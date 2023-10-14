@@ -39,6 +39,7 @@ namespace KarlsonReplay
                 if (GUI.Button(new Rect(15, 15, 200, 60), "Replay", replayStyle))
                 {
                     Game.Instance.RestartGame();
+                    index = 0;
                     isRecording = false;
                     isPlayingReplay = false;
                     isReplaying = true;
@@ -63,7 +64,7 @@ namespace KarlsonReplay
                          isPlayingReplay = false;
                          Timer.Instance.Stop();
                     }
-                    GUI.Label(new Rect(15, 1015, 300, 120), "Replaying... " + "["  + index + "/" + storedPosition.Count + "]", myStyle);
+                    GUI.Label(new Rect(15, 1015, 300, 120), "["  + index + "/" + storedPosition.Count + "]", myStyle);
                 }
                 if (isRecording)
                 {
@@ -173,7 +174,7 @@ namespace KarlsonReplay
                     MelonLogger.Msg("Finished Recording!");
                     MelonLogger.Msg("Player Positions Stored: " + storedPosition.Count);
                     MelonLogger.Msg("Player Rotations Stored: " + storedRotation.Count);
-                }          
+                }
 
                 if (isReplaying)
                 {
@@ -211,10 +212,10 @@ namespace KarlsonReplay
                     {
                         weaponScript.Pickup();
                     }
-                    /*if (storedDrop[index] == true)
+                    if (storedDrop[index] == true)
                     {
-                        weaponScript.Throw(HitPoint()); 
-                    }*/
+                        weaponScript.Throw((HitPoint() - weaponScript.weaponPos.position).normalized); 
+                    }
 
                     if (!Game.Instance.playing)
                     {
