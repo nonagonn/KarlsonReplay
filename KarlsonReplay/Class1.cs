@@ -18,7 +18,10 @@ namespace KarlsonReplay
         private List<Vector3> storedPosition;
         private List<Quaternion> storedRotation;
         private List<Vector3> storedScale;
-        private bool isRecording, isReplaying, isFinishReplay;
+        private List<bool> storedShots;
+        private List<bool> storedPick;
+        private List<bool> storedDrop;
+        private bool isRecording, isReplaying, isFinishReplay, isShooting, isPick, isFreecam, isDrop;
         private int index;
 
         public override void OnGUI()
@@ -49,7 +52,7 @@ namespace KarlsonReplay
             {
                 if (isReplaying)
                 {
-                    GUI.Label(new Rect(15, 1015, 300, 120), "Replaying...", myStyle);
+                    GUI.Label(new Rect(15, 1015, 300, 120), "Replaying... " + "["  + index + "/" + storedPosition.Count + "]", myStyle);
                 }
                 if (isRecording)
                 {
@@ -57,17 +60,89 @@ namespace KarlsonReplay
                 }
             }
         }
+
+        public Vector3 HitPoint()
+        {
+            GameObject playerCam = GameObject.Find("Camera");
+            RaycastHit[] array = Physics.RaycastAll(playerCam.transform.position, playerCam.transform.forward, (float)PlayerMovement.Instance.whatIsHittable);
+            if (array.Length < 1)
+            {
+                return playerCam.transform.position + playerCam.transform.forward * 100f;
+            }
+            if (array.Length > 1)
+            {
+                for (int i = 0; i < array.Length; i++)
+                {
+                    if (array[i].transform.gameObject.layer == LayerMask.NameToLayer("Enemy"))
+                    {
+                        return array[i].point;
+                    }
+                }
+            }
+            return array[0].point;
+        }
         public override void OnUpdate()
-        {  
+        {
+            GameObject camera = GameObject.Find("Camera");
             Scene scene = SceneManager.GetActiveScene();
             if (scene.name != "MainMenu" & scene.name != "Initialize")
             {
                 GameObject player = GameObject.Find("Player");
-                GameObject camera = GameObject.Find("Camera");
+
+                if (Input.GetKeyDown(KeyCode.Alpha1))
+                {
+                    isFreecam = !isFreecam;
+                    if (!isFreecam)
+                    {
+                        GameObject gun = GameObject.Find("GunCam");
+                        var freecam = new GameObject("freecam");
+                        freecam.transform.position = player.transform.position;
+                        freecam.AddComponent<Camera>();
+                        freecam.AddComponent<FreeCam>();
+                        freecam.GetComponent<Camera>().fieldOfView = 110;
+                        gun.SetActive(false);
+                        player.GetComponent<MeshRenderer>().enabled = true;
+                        camera.GetComponent<Camera>().enabled = false;
+                    }
+                    else
+                    {
+                        GameObject gun = GameObject.Find("GunCam");
+                        var freecam = GameObject.Find("freecam");
+                        GameObject.Destroy(freecam);
+                        gun.SetActive(true);
+                        player.GetComponent<MeshRenderer>().enabled = false;
+                        camera.GetComponent<Camera>().enabled = true;
+                    }
+                }
 
                 if (!Game.Instance.playing)
                 {
                     isRecording = false;
+                }
+
+                if (Input.GetButtonDown("Fire1"))
+                {
+                    isShooting = true;
+                }
+                if (Input.GetButtonUp("Fire1"))
+                {
+                    isShooting = false;
+                }
+                if (Input.GetButtonDown("Pickup"))
+                {
+                    isPick = true;
+                }
+                if (Input.GetButtonUp("Pickup"))
+                {
+                    isPick = false;
+                }
+                if (Input.GetButtonDown("Drop"))
+                {
+                    isDrop = true;
+                }
+                if (Input.GetButtonUp("Drop"))
+                {
+                    isDrop = false;
                 }
 
                 if (Input.GetKeyDown(KeyCode.L))
@@ -79,28 +154,44 @@ namespace KarlsonReplay
                     MelonLogger.Msg("Finished Recording!");
                     MelonLogger.Msg("Player Positions Stored: " + storedPosition.Count);
                     MelonLogger.Msg("Player Rotations Stored: " + storedRotation.Count);
-                }
+                }          
 
                 if (isReplaying)
                 {
+                    var weaponScript = GameObject.Find("DetectWeapons").GetComponent<DetectWeapons>();
+                    var playerMovement = player.GetComponent<PlayerMovement>();
                     if (index >= storedPosition.Count)
                     {
-                        index = 0;
                         isReplaying = false;
                         isRecording = false;
                         if (isFinishReplay)
                         {
-                            index = 0;
                             Game.Instance.Win();
                         }
+                        playerMovement.playerCam = camera.transform;
                         isFinishReplay = false;
+                        index = 0;
                         return;
                     }
 
-                    
                     player.transform.position = storedPosition[index];
                     player.transform.localScale = storedScale[index];
+                    playerMovement.playerCam = null;
                     camera.transform.localRotation = storedRotation[index];
+                    
+                    if (storedShots[index] == true)
+                    {
+                        weaponScript.Fire(HitPoint());
+                    }
+                    if (storedPick[index] == true)
+                    {
+                        weaponScript.Pickup();
+                    }
+                    /*if (storedDrop[index] == true)
+                    {
+                        weaponScript.Throw(HitPoint()); 
+                    }*/
+
                     if (!Game.Instance.playing)
                     {
                         return;
@@ -129,6 +220,12 @@ namespace KarlsonReplay
                     storedScale.Clear();
                     storedRotation = new List<Quaternion>();
                     storedRotation.Clear();
+                    storedShots = new List<bool>();
+                    storedShots.Clear();
+                    storedPick = new List<bool>();
+                    storedPick.Clear();
+                    storedDrop = new List<bool>();
+                    storedDrop.Clear();
                     isRecording = true;
                     isReplaying = false;
                     index = 0;
@@ -139,6 +236,9 @@ namespace KarlsonReplay
                     storedPosition.Add(player.transform.position);
                     storedScale.Add(player.transform.localScale);
                     storedRotation.Add(camera.transform.localRotation);
+                    storedShots.Add(isShooting);
+                    storedPick.Add(isPick);
+                    storedDrop.Add(isDrop);
                 }
             }
             else if (scene.name == "MainMenu")
@@ -148,6 +248,88 @@ namespace KarlsonReplay
                 isFinishReplay = false;
                 index = 0;
             }
+        }
+    }
+
+    public class FreeCam : MonoBehaviour
+    {
+        /// <summary>
+        /// Normal speed of camera movement.
+        /// </summary>
+        public float movementSpeed = 25f;
+
+        /// <summary>
+        /// Speed of camera movement when shift is held down,
+        /// </summary>
+        public float fastMovementSpeed = 100f;
+
+        /// <summary>
+        /// Sensitivity for free look.
+        /// </summary>
+        public float freeLookSensitivity = 1.5f;
+
+        /// <summary>
+        /// Set to true when free looking (on right mouse button).
+        /// </summary>
+        private bool looking = false;
+
+        void Update()
+        {
+            var fastMode = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+            var movementSpeed = fastMode ? this.fastMovementSpeed : this.movementSpeed;
+
+            if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
+            {
+                transform.position = transform.position + (-transform.right * movementSpeed * Time.deltaTime);
+            }
+
+            if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
+            {
+                transform.position = transform.position + (transform.right * movementSpeed * Time.deltaTime);
+            }
+
+            if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
+            {
+                transform.position = transform.position + (transform.forward * movementSpeed * Time.deltaTime);
+            }
+
+            if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
+            {
+                transform.position = transform.position + (-transform.forward * movementSpeed * Time.deltaTime);
+            }
+
+            if (Input.GetKey(KeyCode.Q))
+            {
+                transform.position = transform.position + (transform.up * movementSpeed * Time.deltaTime);
+            }
+
+            if (Input.GetKey(KeyCode.E))
+            {
+                transform.position = transform.position + (-transform.up * movementSpeed * Time.deltaTime);
+            }
+
+            if (Input.GetKey(KeyCode.R) || Input.GetKey(KeyCode.PageUp))
+            {
+                transform.position = transform.position + (Vector3.up * movementSpeed * Time.deltaTime);
+            }
+
+            if (Input.GetKey(KeyCode.F) || Input.GetKey(KeyCode.PageDown))
+            {
+                transform.position = transform.position + (-Vector3.up * movementSpeed * Time.deltaTime);
+            }
+
+            if (looking)
+            {
+                float newRotationX = transform.localEulerAngles.y + Input.GetAxis("Mouse X") * freeLookSensitivity;
+                float newRotationY = transform.localEulerAngles.x - Input.GetAxis("Mouse Y") * freeLookSensitivity;
+                transform.localEulerAngles = new Vector3(newRotationY, newRotationX, 0f);
+            }
+
+            StartLooking();
+        }
+        public void StartLooking()
+        {
+            looking = true;
         }
     }
 }
