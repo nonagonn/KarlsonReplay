@@ -174,6 +174,11 @@ namespace KarlsonReplay
                         return;
                     }
 
+                    if (player.GetComponent<PlayerMovement>().paused == true)
+                    {
+                        return;
+                    }
+
                     player.transform.position = storedPosition[index];
                     player.transform.localScale = storedScale[index];
                     playerMovement.playerCam = null;
