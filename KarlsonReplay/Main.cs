@@ -8,13 +8,13 @@ using UnityEngine.SceneManagement;
 using MelonLoader;
 using HarmonyLib;
 using System.Reflection;
-// ...
-[assembly: MelonInfo(typeof(KarlsonReplay.Class1), "KarlsonReplay", "1.0", "nonagon")] // Here MyKarlsonMod is the name of your namespace, and Class1 is the name of the melonmod class
-[assembly: MelonGame("Dani", "Karlson")] // Please note that Dani and Karlson here are important, it tells MelonLoader that our mod is made for Karlson.
+
+[assembly: MelonInfo(typeof(KarlsonReplay.Main), "KarlsonReplay", "1.0", "nonagon")]
+[assembly: MelonGame("Dani", "Karlson")] 
 
 namespace KarlsonReplay
 {
-    public class Class1 : MelonMod
+    public class Main : MelonMod
     {
         private List<Vector3> storedPosition;
         private List<Quaternion> storedRotation;
