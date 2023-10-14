@@ -56,7 +56,7 @@ namespace KarlsonReplay
                 }
                 if (isRecording)
                 {
-                    GUI.Label(new Rect(15, 1015, 300, 120), "Recording...", myStyle);
+                    GUI.Label(new Rect(15, 1015, 300, 120), "Recording... " + "[" + storedPosition.Count + "/" + storedPosition.Count + "]", myStyle);
                 }
             }
         }
