@@ -18,11 +18,16 @@ namespace KarlsonReplay
         private List<Vector3> storedPosition;
         private List<Quaternion> storedRotation;
         private List<Vector3> storedScale;
+        private List<Vector3> storedCameraPos = new List<Vector3>();
+        private List<Quaternion> storedCameraRot = new List<Quaternion>();
         private List<bool> storedShots;
         private List<bool> storedPick;
         private List<bool> storedDrop;
-        private bool isRecording, isReplaying, isFinishReplay, isShooting, isPick, isFreecam, isDrop, isPlayingReplay;
-        private int index;
+        private bool isRecording, isReplaying, isFinishReplay, isShooting, isPick, isFreecam, isDrop, isPlayingReplay, isUiHidden;
+        private int index, freeCamNumber;
+        private int selectedCam;
+        private GameObject timerUI, crosshair;
+
 
         public override void OnGUI()
         {
@@ -48,23 +53,32 @@ namespace KarlsonReplay
                     MelonLogger.Msg("Player Positions Stored: " + storedPosition.Count);
                     MelonLogger.Msg("Player Rotations Stored: " + storedRotation.Count);
                 }
-                
+
             }
             else if (Game.Instance.playing & scene.name != "MainMenu" & scene.name != "Initialize")
             {
+                if (isUiHidden)
+                {
+                    return;
+                }
+
                 if (isReplaying)
                 {
                     if (GUI.Button(new Rect(15, 950, 300, 120), "Play", myStyle))
                     {
-                         isPlayingReplay = true;
-                         Timer.Instance.StartTimer();
+                        isPlayingReplay = true;
+                        Timer.Instance.StartTimer();
                     }
                     if (GUI.Button(new Rect(15, 890, 300, 120), "Pause", myStyle))
                     {
-                         isPlayingReplay = false;
-                         Timer.Instance.Stop();
+                        isPlayingReplay = false;
+                        Timer.Instance.Stop();
                     }
-                    GUI.Label(new Rect(15, 1015, 300, 120), "["  + index + "/" + storedPosition.Count + "]", myStyle);
+                    GUI.Label(new Rect(15, 1015, 300, 120), "[" + index + "/" + storedPosition.Count + "]", myStyle);
+                    if (isFreecam)
+                    {
+                        GUI.Label(new Rect(1810, 1015, 300, 120), "[" + selectedCam + "/" + storedCameraPos.Count + "]", myStyle);
+                    }
                 }
                 if (isRecording)
                 {
@@ -93,6 +107,20 @@ namespace KarlsonReplay
             }
             return array[0].point;
         }
+
+
+        /*public override void OnSceneWasLoaded(int buildIndex, string sceneName)
+        {
+            if (buildIndex != 0)
+            {
+                timerUI = GameObject.Find("Timer");
+                crosshair = GameObject.Find("Crosshair");
+                MelonLogger.Msg(timerUI);
+                MelonLogger.Msg(crosshair);
+            }
+        */
+
+
         public override void OnUpdate()
         {
             GameObject camera = GameObject.Find("Camera");
@@ -101,14 +129,45 @@ namespace KarlsonReplay
             {
                 GameObject player = GameObject.Find("Player");
 
-                if (Input.GetKeyDown(KeyCode.Alpha1))
+                if (isReplaying)
                 {
-                    isFreecam = !isFreecam;
-                    if (!isFreecam)
+                    if (Input.GetKeyDown(KeyCode.H))
                     {
+                        isUiHidden = !isUiHidden;
+                    }
+                    /*if (isUiHidden)
+                    {
+                        timerUI.SetActive(false);
+                        crosshair.SetActive(false);
+                    }
+                    else
+                    {
+                        timerUI.SetActive(true);
+                        crosshair.SetActive(true);
+                    }*/
+
+                    if (Input.GetKeyDown(KeyCode.Alpha1))
+                    {
+                        if (freeCamNumber == 0)
+                        {
+                            isFreecam = true;
+                        }
+                        else if (freeCamNumber == 1)
+                        {
+                            isFreecam = false;
+                        }
+                    }
+                }
+
+                if (isFreecam)
+                {
+                    if (freeCamNumber != 1)
+                    {
+                        freeCamNumber = 1;
                         GameObject gun = GameObject.Find("GunCam");
                         var freecam = new GameObject("freecam");
                         freecam.transform.position = player.transform.position;
+                        freecam.transform.rotation = player.transform.rotation;
                         freecam.AddComponent<Camera>();
                         freecam.AddComponent<FreeCam>();
                         freecam.GetComponent<Camera>().fieldOfView = 110;
@@ -116,8 +175,12 @@ namespace KarlsonReplay
                         player.GetComponent<MeshRenderer>().enabled = true;
                         camera.GetComponent<Camera>().enabled = false;
                     }
-                    else
+                }
+                else
+                {
+                    if (freeCamNumber != 0)
                     {
+                        freeCamNumber = 0;
                         GameObject gun = GameObject.Find("GunCam");
                         var freecam = GameObject.Find("freecam");
                         GameObject.Destroy(freecam);
@@ -132,13 +195,13 @@ namespace KarlsonReplay
                     isRecording = false;
                 }
 
-                if (Input.GetButtonDown("Fire1"))
+                if (Input.GetButton("Fire1"))
                 {
                     var weaponScript = GameObject.Find("DetectWeapons").GetComponent<DetectWeapons>();
                     if (weaponScript.HasGun())
                     {
                         isShooting = true;
-                    }               
+                    }
                 }
                 if (Input.GetButtonUp("Fire1"))
                 {
@@ -203,7 +266,7 @@ namespace KarlsonReplay
                     player.transform.localScale = storedScale[index];
                     playerMovement.playerCam = null;
                     camera.transform.localRotation = storedRotation[index];
-                    
+
                     if (storedShots[index] == true)
                     {
                         weaponScript.Fire(HitPoint());
@@ -214,7 +277,40 @@ namespace KarlsonReplay
                     }
                     if (storedDrop[index] == true)
                     {
-                        weaponScript.Throw((HitPoint() - weaponScript.weaponPos.position).normalized); 
+                        weaponScript.Throw((HitPoint() - weaponScript.weaponPos.position).normalized);
+                    }
+
+                    if (!isPlayingReplay)
+                    {
+                        Timer.Instance.StartTimer();
+                        Timer.Instance.Stop();
+                        if (isFreecam)
+                        {
+                            if (Input.GetKeyDown(KeyCode.C))
+                            {
+                                var freecam = GameObject.Find("freecam");
+                                storedCameraPos.Add(freecam.transform.position);
+                                storedCameraRot.Add(freecam.transform.rotation);
+                            }
+                        }
+                    }
+
+                    if (isFreecam)
+                    {
+                        if (Input.GetKeyDown(KeyCode.RightArrow))
+                        {
+                            selectedCam += 1;
+                            var freecam = GameObject.Find("freecam");
+                            freecam.transform.position = storedCameraPos[selectedCam];
+                            freecam.transform.localRotation = storedCameraRot[selectedCam];
+                        }
+                        if (Input.GetKeyDown(KeyCode.LeftArrow))
+                        {
+                            selectedCam -= 1;
+                            var freecam = GameObject.Find("freecam");
+                            freecam.transform.position = storedCameraPos[selectedCam];
+                            freecam.transform.localRotation = storedCameraRot[selectedCam];
+                        }
                     }
 
                     if (!Game.Instance.playing)
@@ -254,9 +350,16 @@ namespace KarlsonReplay
                     storedPick.Clear();
                     storedDrop = new List<bool>();
                     storedDrop.Clear();
+                    storedCameraPos = new List<Vector3>();
+                    storedCameraPos.Clear();
+                    storedCameraRot = new List<Quaternion>();
+                    storedCameraRot.Clear();
                     isRecording = true;
                     isReplaying = false;
+                    isFreecam = false;
                     index = 0;
+                    freeCamNumber = 0;
+                    selectedCam = 0;
                 }
 
                 if (isRecording)
@@ -328,22 +431,22 @@ namespace KarlsonReplay
                 movementSpeed = 25f;
             }
 
-            if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
+            if (Input.GetKey(KeyCode.A))
             {
                 transform.position = transform.position + (-transform.right * movementSpeed * Time.deltaTime);
             }
 
-            if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
+            if (Input.GetKey(KeyCode.D))
             {
                 transform.position = transform.position + (transform.right * movementSpeed * Time.deltaTime);
             }
 
-            if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
+            if (Input.GetKey(KeyCode.W))
             {
                 transform.position = transform.position + (transform.forward * movementSpeed * Time.deltaTime);
             }
 
-            if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
+            if (Input.GetKey(KeyCode.S))
             {
                 transform.position = transform.position + (-transform.forward * movementSpeed * Time.deltaTime);
             }
