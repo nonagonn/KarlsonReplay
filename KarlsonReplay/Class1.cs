@@ -8,13 +8,12 @@ using UnityEngine.SceneManagement;
 using MelonLoader;
 using HarmonyLib;
 using System.Reflection;
-
-[assembly: MelonInfo(typeof(KarlsonReplay.Main), "KarlsonReplay", "1.0", "nonagon")]
-[assembly: MelonGame("Dani", "Karlson")] 
+[assembly: MelonInfo(typeof(KarlsonReplay.Class1), "KarlsonReplay", "1.0", "nonagon")]
+[assembly: MelonGame("Dani", "Karlson")]
 
 namespace KarlsonReplay
 {
-    public class Main : MelonMod
+    public class Class1 : MelonMod
     {
         private List<Vector3> storedPosition;
         private List<Quaternion> storedRotation;
