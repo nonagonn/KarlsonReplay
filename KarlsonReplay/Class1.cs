@@ -233,6 +233,11 @@ namespace KarlsonReplay
 
                 if (isRecording)
                 {
+                    if (player.GetComponent<PlayerMovement>().paused == true)
+                    {
+                        return;
+                    }
+
                     storedPosition.Add(player.transform.position);
                     storedScale.Add(player.transform.localScale);
                     storedRotation.Add(camera.transform.localRotation);
