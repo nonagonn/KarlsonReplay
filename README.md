@@ -5,13 +5,13 @@ Allows replays in Karlson.
 THIS MOD IS W.I.P! EVERYTHING IS SUBJECT TO CHANGE AND IT IS CURRENTLY UNFINISHED!
 
 # Replay States:
-Player Position
+*Player Position
 
-Camera Rotation
+*Camera Rotation
 
-Shooting
+*Shooting
 
-Picking Up Guns
+*Picking Up Guns
 
 (More Planned!)
 
