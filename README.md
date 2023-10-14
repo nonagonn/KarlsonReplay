@@ -26,7 +26,9 @@ If you want to stop recording at any time, you can pause the game and press L to
 If you want to replay a level when you finish, press the REPLAY button in the top left.
 
 **Press 1 to enter Free Cam Mode**
+
 Left Control to move slower
+
 Left Shift to move faster
 
 # Features:
