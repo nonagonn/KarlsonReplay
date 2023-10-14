@@ -21,7 +21,7 @@ namespace KarlsonReplay
         private List<bool> storedShots;
         private List<bool> storedPick;
         private List<bool> storedDrop;
-        private bool isRecording, isReplaying, isFinishReplay, isShooting, isPick, isFreecam, isDrop;
+        private bool isRecording, isReplaying, isFinishReplay, isShooting, isPick, isFreecam, isDrop, isPlayingReplay;
         private int index;
 
         public override void OnGUI()
@@ -40,6 +40,7 @@ namespace KarlsonReplay
                 {
                     Game.Instance.RestartGame();
                     isRecording = false;
+                    isPlayingReplay = false;
                     isReplaying = true;
                     isFinishReplay = true;
                     MelonLogger.Msg("Finished Recording!");
@@ -52,6 +53,16 @@ namespace KarlsonReplay
             {
                 if (isReplaying)
                 {
+                    if (GUI.Button(new Rect(15, 950, 300, 120), "Play", myStyle))
+                    {
+                         isPlayingReplay = true;
+                         Timer.Instance.StartTimer();
+                    }
+                    if (GUI.Button(new Rect(15, 890, 300, 120), "Pause", myStyle))
+                    {
+                         isPlayingReplay = false;
+                         Timer.Instance.Stop();
+                    }
                     GUI.Label(new Rect(15, 1015, 300, 120), "Replaying... " + "["  + index + "/" + storedPosition.Count + "]", myStyle);
                 }
                 if (isRecording)
@@ -209,7 +220,10 @@ namespace KarlsonReplay
                     {
                         return;
                     }
-                    index += 1;
+                    if (isPlayingReplay)
+                    {
+                        index += 1;
+                    }
                 }
 
                 var timer = Timer.Instance.GetTimer();
@@ -251,6 +265,11 @@ namespace KarlsonReplay
                         return;
                     }
 
+                    if (player.GetComponent<PlayerMovement>().IsDead())
+                    {
+                        return;
+                    }
+
                     storedPosition.Add(player.transform.position);
                     storedScale.Add(player.transform.localScale);
                     storedRotation.Add(camera.transform.localRotation);
@@ -279,7 +298,7 @@ namespace KarlsonReplay
         /// <summary>
         /// Speed of camera movement when shift is held down,
         /// </summary>
-        public float fastMovementSpeed = 100f;
+        public float fastMovementSpeed = 75f;
 
         /// <summary>
         /// Sensitivity for free look.
@@ -294,7 +313,19 @@ namespace KarlsonReplay
         void Update()
         {
             var fastMode = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-            var movementSpeed = fastMode ? this.fastMovementSpeed : this.movementSpeed;
+            if (fastMode)
+            {
+                movementSpeed = fastMovementSpeed;
+            }
+            var slowMode = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+            if (slowMode)
+            {
+                movementSpeed = 10f;
+            }
+            if (!fastMode & !slowMode)
+            {
+                movementSpeed = 25f;
+            }
 
             if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
             {
