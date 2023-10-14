@@ -4,11 +4,13 @@ Allows replays in Karlson.
 # DISCLAIMER:
 THIS MOD IS W.I.P! EVERYTHING IS SUBJECT TO CHANGE AND IT IS CURRENTLY UNFINISHED!
 
-# Planned Features:
+# Replay States:
+Player Position
+Camera Rotation
+Shooting
+Picking Up Guns
 
-Saving Replays
-
-Recording States such as grabbing gun, shooting, and more
+(More Planned!)
 
 # How to Install:
 
