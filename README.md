@@ -23,7 +23,11 @@ If you want to stop recording at any time, you can pause the game and press L to
 
 If you want to replay a level when you finish, press the REPLAY button in the top left.
 
-# Replay States:
+**Press 1 to enter Free Cam Mode**
+
+# Features:
+**-Free Cam-**
+
 **-Player Position-**
 
 **-Camera Rotation-**
