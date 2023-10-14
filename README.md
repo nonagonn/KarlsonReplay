@@ -6,8 +6,11 @@ THIS MOD IS W.I.P! EVERYTHING IS SUBJECT TO CHANGE AND IT IS CURRENTLY UNFINISHE
 
 # Replay States:
 Player Position
+
 Camera Rotation
+
 Shooting
+
 Picking Up Guns
 
 (More Planned!)
