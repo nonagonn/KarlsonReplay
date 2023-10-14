@@ -31,6 +31,10 @@ Left Control to move slower
 
 Left Shift to move faster
 
+Press the Play button in the bottom left to play the replay
+
+Press the Pause button in the bottom left to pause the replay
+
 # Features:
 **-Free Cam-**
 
