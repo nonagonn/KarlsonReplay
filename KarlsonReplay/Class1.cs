@@ -122,11 +122,19 @@ namespace KarlsonReplay
 
                 if (Input.GetButtonDown("Fire1"))
                 {
-                    isShooting = true;
+                    var weaponScript = GameObject.Find("DetectWeapons").GetComponent<DetectWeapons>();
+                    if (weaponScript.HasGun())
+                    {
+                        isShooting = true;
+                    }               
                 }
                 if (Input.GetButtonUp("Fire1"))
                 {
-                    isShooting = false;
+                    var weaponScript = GameObject.Find("DetectWeapons").GetComponent<DetectWeapons>();
+                    if (weaponScript.HasGun())
+                    {
+                        isShooting = false;
+                    }
                 }
                 if (Input.GetButtonDown("Pickup"))
                 {
