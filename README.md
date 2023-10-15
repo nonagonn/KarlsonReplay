@@ -27,13 +27,16 @@ If you want to replay a level when you finish, press the REPLAY button in the to
 
 **Press 1 to enter Free Cam Mode**
 
-Left Control to move slower
-
-Left Shift to move faster
+**Press C in Free Cam Mode to save the Camera's position. Use arrow keys to go through each saved position**
 
 Press the Play button in the bottom left to play the replay
 
 Press the Pause button in the bottom left to pause the replay
+
+Left Control to move slower
+
+Left Shift to move faster
+
 
 # Features:
 **-Free Cam-**
