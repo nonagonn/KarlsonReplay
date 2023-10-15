@@ -23,7 +23,9 @@ namespace KarlsonReplay
         private List<bool> storedShots;
         private List<bool> storedPick;
         private List<bool> storedDrop;
-        private bool isRecording, isReplaying, isFinishReplay, isShooting, isPick, isFreecam, isDrop, isPlayingReplay, isUiHidden;
+        private List<bool> storedGrab;
+        private bool isRecording, isFinishReplay, isShooting, isPick, isFreecam, isDrop, isUiHidden, isPlayingReplay, isGrabbing;
+        public static bool isReplaying;
         private int index, freeCamNumber;
         private int selectedCam;
         private GameObject timerUI, crosshair;
@@ -66,13 +68,11 @@ namespace KarlsonReplay
                 {
                     if (GUI.Button(new Rect(15, 950, 300, 120), "Play", myStyle))
                     {
-                        isPlayingReplay = true;
-                        Timer.Instance.StartTimer();
+                        PlayReplay();
                     }
                     if (GUI.Button(new Rect(15, 890, 300, 120), "Pause", myStyle))
                     {
-                        isPlayingReplay = false;
-                        Timer.Instance.Stop();
+                        PauseReplay();
                     }
                     GUI.Label(new Rect(15, 1015, 300, 120), "[" + index + "/" + storedPosition.Count + "]", myStyle);
                     if (isFreecam)
@@ -85,6 +85,18 @@ namespace KarlsonReplay
                     GUI.Label(new Rect(15, 1015, 300, 120), "Recording... " + "[" + storedPosition.Count + "/" + storedPosition.Count + "]", myStyle);
                 }
             }
+        }
+
+        public void PlayReplay()
+        {
+            isPlayingReplay = true;
+            Timer.Instance.StartTimer();
+        }
+
+        public void PauseReplay()
+        {
+            isPlayingReplay = false;
+            Timer.Instance.Stop();
         }
 
         public Vector3 HitPoint()
@@ -129,36 +141,6 @@ namespace KarlsonReplay
             {
                 GameObject player = GameObject.Find("Player");
 
-                if (isReplaying)
-                {
-                    if (Input.GetKeyDown(KeyCode.H))
-                    {
-                        isUiHidden = !isUiHidden;
-                    }
-                    /*if (isUiHidden)
-                    {
-                        timerUI.SetActive(false);
-                        crosshair.SetActive(false);
-                    }
-                    else
-                    {
-                        timerUI.SetActive(true);
-                        crosshair.SetActive(true);
-                    }*/
-
-                    if (Input.GetKeyDown(KeyCode.Alpha1))
-                    {
-                        if (freeCamNumber == 0)
-                        {
-                            isFreecam = true;
-                        }
-                        else if (freeCamNumber == 1)
-                        {
-                            isFreecam = false;
-                        }
-                    }
-                }
-
                 if (isFreecam)
                 {
                     if (freeCamNumber != 1)
@@ -202,13 +184,21 @@ namespace KarlsonReplay
                     {
                         isShooting = true;
                     }
+                    if (!weaponScript.HasGun())
+                    {
+                        isGrabbing = true;
+                    }
                 }
                 if (Input.GetButtonUp("Fire1"))
                 {
                     var weaponScript = GameObject.Find("DetectWeapons").GetComponent<DetectWeapons>();
                     if (weaponScript.HasGun())
                     {
-                        isShooting = false;
+                        isShooting = false;                     
+                    }
+                    if (!weaponScript.HasGun())
+                    {
+                        isGrabbing = false;
                     }
                 }
                 if (Input.GetButtonDown("Pickup"))
@@ -243,6 +233,44 @@ namespace KarlsonReplay
                 {
                     var weaponScript = GameObject.Find("DetectWeapons").GetComponent<DetectWeapons>();
                     var playerMovement = player.GetComponent<PlayerMovement>();
+
+                    if (Input.GetKeyDown(KeyCode.Space))
+                    {
+                        PlayReplay();
+                    }
+
+                    if (Input.GetKeyDown(KeyCode.V))
+                    {
+                        PauseReplay();
+                    }
+
+                    if (Input.GetKeyDown(KeyCode.H))
+                    {
+                        isUiHidden = !isUiHidden;
+                    }
+                    /*if (isUiHidden)
+                    {
+                        timerUI.SetActive(false);
+                        crosshair.SetActive(false);
+                    }
+                    else
+                    {
+                        timerUI.SetActive(true);
+                        crosshair.SetActive(true);
+                    }*/
+
+                    if (Input.GetKeyDown(KeyCode.Alpha1))
+                    {
+                        if (freeCamNumber == 0)
+                        {
+                            isFreecam = true;
+                        }
+                        else if (freeCamNumber == 1)
+                        {
+                            isFreecam = false;
+                        }
+                    }
+
                     if (index >= storedPosition.Count)
                     {
                         isReplaying = false;
@@ -251,7 +279,6 @@ namespace KarlsonReplay
                         {
                             Game.Instance.Win();
                         }
-                        playerMovement.playerCam = camera.transform;
                         isFinishReplay = false;
                         index = 0;
                         return;
@@ -264,13 +291,26 @@ namespace KarlsonReplay
 
                     player.transform.position = storedPosition[index];
                     player.transform.localScale = storedScale[index];
-                    playerMovement.playerCam = null;
                     camera.transform.localRotation = storedRotation[index];
 
                     if (storedShots[index] == true)
                     {
                         weaponScript.Fire(HitPoint());
                     }
+                    else
+                    {
+                        weaponScript.StopUse();
+                    }
+                    /*if (storedGrab[index] == true)
+                    {
+                        MethodInfo privMethod = PlayerMovement.Instance.GetType().GetMethod("GrabObject", BindingFlags.NonPublic | BindingFlags.Instance);
+                        privMethod.Invoke(PlayerMovement.Instance, new object[] {null});
+                    }
+                    else 
+                    {
+                        MethodInfo privMethod = PlayerMovement.Instance.GetType().GetMethod("StopGrab", BindingFlags.NonPublic | BindingFlags.Instance);
+                        privMethod.Invoke(PlayerMovement.Instance, new object[] { null });
+                    }*/
                     if (storedPick[index] == true)
                     {
                         weaponScript.Pickup();
@@ -279,9 +319,14 @@ namespace KarlsonReplay
                     {
                         weaponScript.Throw((HitPoint() - weaponScript.weaponPos.position).normalized);
                     }
+                    if (isPlayingReplay)
+                    {
+                        playerMovement.playerCam = camera.transform;
+                    }
 
                     if (!isPlayingReplay)
                     {
+                        playerMovement.playerCam = null;
                         Timer.Instance.StartTimer();
                         Timer.Instance.Stop();
                         if (isFreecam)
@@ -339,21 +384,14 @@ namespace KarlsonReplay
 
                     MelonLogger.Msg("Recording...");
                     storedPosition = new List<Vector3>();
-                    storedPosition.Clear();
                     storedScale = new List<Vector3>();
-                    storedScale.Clear();
                     storedRotation = new List<Quaternion>();
-                    storedRotation.Clear();
                     storedShots = new List<bool>();
-                    storedShots.Clear();
                     storedPick = new List<bool>();
-                    storedPick.Clear();
                     storedDrop = new List<bool>();
-                    storedDrop.Clear();
                     storedCameraPos = new List<Vector3>();
-                    storedCameraPos.Clear();
                     storedCameraRot = new List<Quaternion>();
-                    storedCameraRot.Clear();
+                    storedGrab = new List<bool>();
                     isRecording = true;
                     isReplaying = false;
                     isFreecam = false;
@@ -380,6 +418,7 @@ namespace KarlsonReplay
                     storedShots.Add(isShooting);
                     storedPick.Add(isPick);
                     storedDrop.Add(isDrop);
+                    storedGrab.Add(isGrabbing);
                 }
             }
             else if (scene.name == "MainMenu")
@@ -483,6 +522,38 @@ namespace KarlsonReplay
         public void StartLooking()
         {
             looking = true;
+        }
+    }
+
+    [HarmonyPatch(typeof(PlayerMovement), "Look")]
+    public static class Patch
+    {
+        private static bool Prefix()
+        {
+            if (Class1.isReplaying)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(PlayerMovement), "KillPlayer")]
+    public static class Patch1
+    {
+        private static bool Prefix()
+        {
+            if (Class1.isReplaying)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
         }
     }
 }
