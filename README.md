@@ -47,6 +47,10 @@ Left Shift to move faster
 
 **-Shooting-**
 
+**-Picking Up Guns-**
+
+(More Planned!)
+
 # FOR PEOPLE LOOKING TO MAKE A BUILD!
 This project uses *unsafe* code in C#, meaning that your compiler will likely throw an error.
 To fix this:
@@ -55,8 +59,3 @@ To fix this:
 2. At the bottom of the tab that it opens, click **KarlsonReplay Properties**
 3. Click **Build**
 4. Click **Allow Unsafe Code**
-
-**-Picking Up Guns-**
-
-(More Planned!)
-
